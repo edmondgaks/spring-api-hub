@@ -1,5 +1,6 @@
 package com.workshop.edmond.controllers;
 
+import com.workshop.edmond.config.JwtUtils;
 import com.workshop.edmond.dto.AuthenticationRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
+    private JwtUtils jwtUtils;
     public ResponseEntity<String> authenticate(
             @RequestBody AuthenticationRequest request
             ) {
@@ -26,5 +28,9 @@ public class AuthenticationController {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
         final UserDetails user = userDetailsService.loadUserByUsername(request.getEmail());
+        if(user != null) {
+            return ResponseEntity.ok(jwtUtils.generateToken(user));
+        }
+        return ResponseEntity.status(400).body("Some error has occured");
     }
 }
